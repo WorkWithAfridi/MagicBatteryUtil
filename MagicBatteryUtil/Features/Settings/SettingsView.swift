@@ -194,7 +194,7 @@ struct SettingsView: View {
             }
 
             settingsSection("Project status") {
-                Text("The next major milestone is automated tests and a WidgetKit extension target for cached battery widgets.")
+                Text("The next major milestones are App Group entitlements, automated test coverage, and final widget validation on desktop and Notification Center.")
                     .foregroundStyle(AppTheme.secondaryText)
             }
         }

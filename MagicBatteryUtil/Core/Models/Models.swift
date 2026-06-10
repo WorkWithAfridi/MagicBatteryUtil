@@ -138,7 +138,7 @@ struct BatterySnapshotEnvelope: Codable {
     var devices: [DeviceBatterySnapshot]
     var thresholdPercent: Int
 
-    var staleInterval: TimeInterval { 30 * 60 }
+    var staleInterval: TimeInterval { AppConfiguration.widgetStaleInterval }
 
     var isStale: Bool {
         Date().timeIntervalSince(generatedAt) > staleInterval

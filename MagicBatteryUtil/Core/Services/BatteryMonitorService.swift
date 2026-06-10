@@ -86,7 +86,7 @@ final class BatteryMonitorService {
 
     private func schedulePolling() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: AppConfiguration.batteryPollingInterval, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 await self?.refresh(reason: .scheduledPoll)
             }

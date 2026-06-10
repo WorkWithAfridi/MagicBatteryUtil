@@ -43,3 +43,5 @@ xcodebuild -scheme MagicBatteryUtil -project MagicBatteryUtil.xcodeproj CODE_SIG
 - The main app target is implemented.
 - Widget extension and automated tests are still pending.
 - The detailed product plan lives in [Docs/Magic_Battery_Monitor_Project_Document.md](Docs/Magic_Battery_Monitor_Project_Document.md).
+- Troubleshooting guidance lives in [Docs/Troubleshooting.md](Docs/Troubleshooting.md).
+- A draft release note outline lives in [Docs/Release_Notes_Draft.md](Docs/Release_Notes_Draft.md).

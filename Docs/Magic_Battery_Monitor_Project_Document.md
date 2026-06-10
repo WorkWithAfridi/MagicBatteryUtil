@@ -366,13 +366,13 @@ Notification rule: send a notification only when a detected device transitions f
 
 - [ ] Enable App Group capability on app and widget.
 
-- [ ] Publish latest snapshot to shared storage.
+- [x] Publish latest snapshot to shared storage.
 
-- [ ] Create small and medium widgets.
+- [x] Create small and medium widgets.
 
-- [ ] Reload timelines after snapshot updates.
+- [x] Reload timelines after snapshot updates.
 
-- [ ] Add stale-data handling.
+- [x] Add stale-data handling.
 
 ## Phase 5 - Reliability, signing, release
 
@@ -384,7 +384,7 @@ Notification rule: send a notification only when a detected device transitions f
 
 - [ ] Sign and notarize direct distribution build.
 
-- [ ] Create release notes and troubleshooting docs.
+- [x] Create release notes and troubleshooting docs.
 
 # 13. Thorough Development Checklist
 
@@ -394,7 +394,7 @@ Notification rule: send a notification only when a detected device transitions f
 
 - [x] Set deployment target. Recommended: macOS 13+ for SMAppService and modern SwiftUI menu bar APIs.
 
-- [ ] Create WidgetKit extension target.
+- [x] Create WidgetKit extension target.
 
 - [ ] Create App Group identifier and enable it for both app and widget targets.
 
@@ -507,7 +507,7 @@ Notification rule: send a notification only when a detected device transitions f
 ## 13.1 Implementation notes
 
 - [x] Core macOS app MVP is now implemented in the main app target.
-- [ ] WidgetKit extension remains a follow-up task because the project still has only one target.
+- [x] WidgetKit extension target is now part of the project.
 - [ ] Automated tests are still outstanding and should be added before release.
 
 ## Widgets
@@ -518,11 +518,11 @@ Notification rule: send a notification only when a detected device transitions f
 
 - [x] Read shared snapshot from App Group store.
 
-- [ ] Show stale warning when snapshot age exceeds freshness window.
+- [x] Show stale warning when snapshot age exceeds freshness window.
 
-- [ ] Support no-data state.
+- [x] Support no-data state.
 
-- [ ] Call WidgetCenter.shared.reloadAllTimelines() after saving new snapshot.
+- [x] Call WidgetCenter.shared.reloadAllTimelines() after saving new snapshot.
 
 - [ ] Test widgets on desktop and Notification Center.
 

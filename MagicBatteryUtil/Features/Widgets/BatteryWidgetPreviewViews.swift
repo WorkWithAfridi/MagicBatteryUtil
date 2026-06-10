@@ -9,32 +9,33 @@ struct SmallBatteryWidgetPreview: View {
     let snapshot: BatterySnapshotEnvelope
 
     var body: some View {
+        let state = BatteryWidgetSnapshotProvider(store: PreviewSharedBatteryStore(snapshot: snapshot)).loadState(now: snapshot.generatedAt)
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("MagicBatteryUtil")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(AppTheme.secondaryText)
                 Spacer()
-                if snapshot.isStale {
+                if state.isStale {
                     StatusPill(status: .stale)
                 }
             }
 
-            if let device = snapshot.lowestBatteryDevice {
+            if let device = state.envelope?.lowestBatteryDevice {
                 VStack(alignment: .leading, spacing: 8) {
                     Label(device.displayName, systemImage: device.kind.symbolName)
                         .font(.headline)
                         .foregroundStyle(AppTheme.primaryText)
                     Text(device.batteryLabel)
                         .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundStyle(device.displayStatus(threshold: snapshot.thresholdPercent, staleInterval: snapshot.staleInterval).color)
+                        .foregroundStyle(device.displayStatus(threshold: state.envelope?.thresholdPercent ?? 30, staleInterval: state.envelope?.staleInterval ?? AppConfiguration.widgetStaleInterval).color)
                     BatteryLevelBar(
                         percent: device.batteryPercent,
-                        color: device.displayStatus(threshold: snapshot.thresholdPercent, staleInterval: snapshot.staleInterval).color
+                        color: device.displayStatus(threshold: state.envelope?.thresholdPercent ?? 30, staleInterval: state.envelope?.staleInterval ?? AppConfiguration.widgetStaleInterval).color
                     )
                 }
             } else {
-                Text("No device data")
+                Text(state.emptyMessage ?? "No device data")
                     .foregroundStyle(AppTheme.secondaryText)
             }
 
@@ -53,41 +54,50 @@ struct MediumBatteryWidgetPreview: View {
     let snapshot: BatterySnapshotEnvelope
 
     var body: some View {
+        let state = BatteryWidgetSnapshotProvider(store: PreviewSharedBatteryStore(snapshot: snapshot)).loadState(now: snapshot.generatedAt)
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Accessory Status")
                     .font(.headline)
                     .foregroundStyle(AppTheme.primaryText)
                 Spacer()
-                if snapshot.isStale {
+                if state.isStale {
                     StatusPill(status: .stale)
                 }
             }
 
-            ForEach(snapshot.devices.prefix(3)) { device in
+            ForEach((state.envelope?.devices ?? []).prefix(3)) { device in
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Label(device.displayName, systemImage: device.kind.symbolName)
                             .foregroundStyle(AppTheme.primaryText)
                         Spacer()
                         Text(device.batteryLabel)
-                            .foregroundStyle(device.displayStatus(threshold: snapshot.thresholdPercent, staleInterval: snapshot.staleInterval).color)
+                            .foregroundStyle(device.displayStatus(threshold: state.envelope?.thresholdPercent ?? 30, staleInterval: state.envelope?.staleInterval ?? AppConfiguration.widgetStaleInterval).color)
                     }
                     BatteryLevelBar(
                         percent: device.batteryPercent,
-                        color: device.displayStatus(threshold: snapshot.thresholdPercent, staleInterval: snapshot.staleInterval).color
+                        color: device.displayStatus(threshold: state.envelope?.thresholdPercent ?? 30, staleInterval: state.envelope?.staleInterval ?? AppConfiguration.widgetStaleInterval).color
                     )
                 }
             }
 
             Spacer()
-            Text(snapshot.isStale ? "Cached data is older than 30 minutes" : "Updated \(snapshot.generatedAt.formatted(date: .omitted, time: .shortened))")
+            Text(state.staleMessage ?? "Updated \(snapshot.generatedAt.formatted(date: .omitted, time: .shortened))")
                 .font(.caption)
                 .foregroundStyle(AppTheme.secondaryText)
         }
         .padding(18)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .glassPanel()
+    }
+}
+
+private struct PreviewSharedBatteryStore: SharedBatteryStoreProtocol {
+    let snapshot: BatterySnapshotEnvelope
+
+    func loadSnapshotEnvelope() -> BatterySnapshotEnvelope? {
+        snapshot
     }
 }
 

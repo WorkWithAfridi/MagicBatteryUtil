@@ -5,7 +5,11 @@
 
 import Foundation
 
-final class SharedBatteryStore {
+protocol SharedBatteryStoreProtocol {
+    func loadSnapshotEnvelope() -> BatterySnapshotEnvelope?
+}
+
+final class SharedBatteryStore: SharedBatteryStoreProtocol {
     private enum Keys {
         static let latestSnapshot = "shared.latestSnapshot"
         static let notificationMemory = "shared.notificationMemory"
@@ -15,7 +19,7 @@ final class SharedBatteryStore {
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 
-    init(appGroupID: String = "group.com.workwithafridi.MagicBatteryUtil") {
+    init(appGroupID: String = AppConfiguration.appGroupID) {
         defaults = UserDefaults(suiteName: appGroupID) ?? .standard
     }
 
