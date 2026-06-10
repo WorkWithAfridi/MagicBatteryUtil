@@ -12,7 +12,7 @@
 
 /* Begin PBXFileReference section */
 		EFC1DF122FD93FC100DBE11F /* MagicBatteryUtil.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MagicBatteryUtil.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		EFC1DF402FD941C900DBE11F /* Magic_Battery_Monitor_Project_Document.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Magic_Battery_Monitor_Project_Document.md; sourceTree = "<group>"; };
+		EFC1DF402FD941C900DBE11F /* Magic_Battery_Monitor_Project_Document.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Docs/Magic_Battery_Monitor_Project_Document.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
