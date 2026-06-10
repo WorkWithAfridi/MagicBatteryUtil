@@ -15,6 +15,7 @@ final class AppModel: ObservableObject {
     @Published private(set) var lastSuccessfulRefreshAt: Date?
     @Published private(set) var isRefreshing = false
     @Published private(set) var errorMessage: String?
+    @Published private(set) var diagnosticsMessage: String?
     @Published private(set) var notificationAuthorizationStatus: UNAuthorizationStatus = .notDetermined
     @Published private(set) var launchAtLoginEnabled = false
     @Published private(set) var launchAtLoginError: String?
@@ -37,10 +38,27 @@ final class AppModel: ObservableObject {
     let staleInterval: TimeInterval = 30 * 60
 
     var menuBarSymbolName: String {
+        if devices.contains(where: { $0.displayStatus(threshold: thresholdPercent, staleInterval: staleInterval) == .critical }) {
+            return "battery.0"
+        }
         if devices.contains(where: { $0.isLow(threshold: thresholdPercent) }) {
             return "battery.25"
         }
         return "battery.75"
+    }
+
+    var connectedDevicesCount: Int {
+        devices.filter { $0.connectionState == .connected }.count
+    }
+
+    var lowBatteryCount: Int {
+        devices.filter { $0.isLow(threshold: thresholdPercent) }.count
+    }
+
+    var averageBatteryPercent: Int? {
+        let values = devices.compactMap(\.batteryPercent)
+        guard !values.isEmpty else { return nil }
+        return values.reduce(0, +) / values.count
     }
 
     private let settingsStore: SettingsStore
@@ -142,5 +160,6 @@ final class AppModel: ObservableObject {
         lastSuccessfulRefreshAt = state.lastSuccessfulRefreshAt
         isRefreshing = state.isRefreshing
         errorMessage = state.errorMessage
+        diagnosticsMessage = state.diagnosticsMessage
     }
 }

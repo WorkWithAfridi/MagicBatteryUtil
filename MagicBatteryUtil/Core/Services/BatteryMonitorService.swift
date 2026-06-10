@@ -18,6 +18,8 @@ final class BatteryMonitorService {
     private var deviceCache: [String: DeviceBatterySnapshot] = [:]
     private var lastSuccessfulRefreshAt: Date?
     private var isRefreshing = false
+    private var lastWidgetReloadAt: Date?
+    private var diagnosticsMessage: String?
 
     init(
         reader: any BatteryReader,
@@ -54,7 +56,9 @@ final class BatteryMonitorService {
         }
 
         do {
-            let freshDevices = try reader.readBatterySnapshots()
+            let readResult = try readDevices()
+            diagnosticsMessage = readResult.diagnostics.nilIfEmpty()?.joined(separator: "\n")
+            let freshDevices = readResult.devices
             let mergedDevices = mergeWithDisconnectedDevices(freshDevices)
             deviceCache = Dictionary(uniqueKeysWithValues: mergedDevices.map { ($0.id, $0) })
 
@@ -65,7 +69,7 @@ final class BatteryMonitorService {
                 thresholdPercent: settingsStore.thresholdPercent
             )
             sharedStore.saveSnapshotEnvelope(envelope)
-            WidgetCenter.shared.reloadAllTimelines()
+            reloadWidgetsIfNeeded()
 
             await evaluateNotifications(for: mergedDevices, threshold: settingsStore.thresholdPercent)
         } catch {
@@ -73,9 +77,16 @@ final class BatteryMonitorService {
         }
     }
 
+    private func readDevices() throws -> BatteryReadResult {
+        if let reader = reader as? IORegistryBatteryReader {
+            return try reader.readBatteryResult()
+        }
+        return BatteryReadResult(devices: try reader.readBatterySnapshots(), diagnostics: [])
+    }
+
     private func schedulePolling() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 600, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 await self?.refresh(reason: .scheduledPoll)
             }
@@ -118,6 +129,15 @@ final class BatteryMonitorService {
         sharedStore.saveNotificationMemory(memory)
     }
 
+    private func reloadWidgetsIfNeeded() {
+        let now = Date()
+        if let lastWidgetReloadAt, now.timeIntervalSince(lastWidgetReloadAt) < 45 {
+            return
+        }
+        lastWidgetReloadAt = now
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
     private func publishState(lastRefreshAt: Date?, errorMessage: String?) {
         onStateChange?(
             MonitorState(
@@ -125,8 +145,15 @@ final class BatteryMonitorService {
                 lastRefreshAt: lastRefreshAt,
                 lastSuccessfulRefreshAt: lastSuccessfulRefreshAt,
                 isRefreshing: isRefreshing,
-                errorMessage: errorMessage
+                errorMessage: errorMessage,
+                diagnosticsMessage: diagnosticsMessage
             )
         )
+    }
+}
+
+private extension Array where Element == String {
+    func nilIfEmpty() -> [String]? {
+        isEmpty ? nil : self
     }
 }

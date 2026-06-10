@@ -8,7 +8,7 @@ _Target platform: macOS | Primary stack: Swift, SwiftUI, WidgetKit, ServiceManag
 
 Magic Battery Monitor is a lightweight native macOS utility that monitors the battery percentage of Apple Magic Keyboard, Magic Mouse, and optionally Magic Trackpad. It provides a live in-app dashboard, a menu bar presence, local low-battery notifications, launch-at-login control from inside the app, and desktop widgets that display current accessory battery state.
 
-The recommended architecture is a SwiftUI menu bar plus regular app-window utility. Battery information should be read from IORegistry/HID device properties rather than from CoreBluetooth as the primary data path. Monitoring should use low-frequency polling with immediate refresh on launch and wake. WidgetKit should display cached state from an App Group store, while the main app remains responsible for actual monitoring and notifications.
+The recommended architecture is a SwiftUI menu bar plus regular app-window utility. Battery information should be read from IORegistry/HID device properties rather than from CoreBluetooth as the primary data path. Monitoring should use low-frequency polling with immediate refresh on launch, wake, and a one-minute interval. WidgetKit should display cached state from an App Group store, while the main app remains responsible for actual monitoring and notifications.
 
 # 2. Product Goals and Non-Goals
 
@@ -41,11 +41,11 @@ The recommended architecture is a SwiftUI menu bar plus regular app-window utili
 
 - [x] No user account, cloud service, analytics, or telemetry is required for MVP.
 
-- [x] Battery polling interval should default to 10 minutes and be configurable only if needed.
+- [x] Battery polling interval should default to 1 minute and be configurable only if needed.
 
 - [x] App should not require administrator privileges.
 
-- [ ] App should gracefully handle missing permissions, missing devices, stale cached values, and sleeping/waking.
+- [x] App should gracefully handle missing permissions, missing devices, stale cached values, and sleeping/waking.
 
 - [x] Storage should use UserDefaults/App Group JSON only; no database is needed.
 
@@ -151,7 +151,7 @@ struct DeviceBatterySnapshot: Codable, Identifiable, Equatable {
 
 ## 7.3 Monitoring strategy
 
-Use low-frequency polling. Battery percentage changes slowly, and Apple accessory battery information is not a good fit for constant Bluetooth scans. Recommended behavior: refresh immediately on app launch, every 10 minutes, after wake from sleep, and when the user presses Refresh.
+Use low-frequency polling. Recommended behavior: refresh immediately on app launch, every 1 minute, and after wake from sleep.
 
 ```swift
 final class BatteryMonitorService {
@@ -159,7 +159,7 @@ final class BatteryMonitorService {
 
     func start() {
         refresh(reason: .appLaunch)
-        timer = Timer.scheduledTimer(withTimeInterval: 600, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
             self?.refresh(reason: .scheduledPoll)
         }
     }
@@ -223,7 +223,7 @@ WidgetCenter.shared.reloadAllTimelines()
 
 - [x] Last checked timestamp.
 
-- [x] Manual Refresh button.
+- [ ] Manual Refresh button.
 
 - [x] Open Settings button.
 
@@ -241,7 +241,7 @@ WidgetCenter.shared.reloadAllTimelines()
 
 - [x] Request Notification Permission button if needed.
 
-- [x] Polling interval display, default 10 minutes; keep advanced interval control hidden unless needed.
+- [x] Polling interval display, default 1 minute; keep advanced interval control hidden unless needed.
 
 - [x] Include supported devices list and troubleshooting link/instructions.
 
@@ -251,7 +251,7 @@ WidgetCenter.shared.reloadAllTimelines()
 
 - [x] Low-battery highlighting for devices below threshold.
 
-- [x] Refresh Now action.
+- [ ] Refresh Now action.
 
 - [x] Open Magic Battery Monitor action.
 
@@ -293,13 +293,13 @@ Notification rule: send a notification only when a detected device transitions f
 
 # 10. Permissions, Privacy, and Distribution
 
-- [ ] Notification permission is required for low-battery alerts.
+- [x] Notification permission is required for low-battery alerts.
 
-- [ ] No Bluetooth permission should be requested for the IORegistry-first implementation.
+- [x] No Bluetooth permission should be requested for the IORegistry-first implementation.
 
-- [ ] No location, contacts, files, microphone, camera, network, or analytics permission is required.
+- [x] No location, contacts, files, microphone, camera, network, or analytics permission is required.
 
-- [ ] The app should not require admin privileges.
+- [x] The app should not require admin privileges.
 
 - [ ] For direct distribution, sign and notarize the app.
 
@@ -434,7 +434,7 @@ Notification rule: send a notification only when a detected device transitions f
 
 - [x] Prevent concurrent refresh calls.
 
-- [ ] Debounce widget timeline reloads if refreshes happen close together.
+- [x] Debounce widget timeline reloads if refreshes happen close together.
 
 - [x] Mark data stale if last successful read is too old.
 

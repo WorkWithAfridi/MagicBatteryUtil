@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 enum DeviceKind: String, Codable, CaseIterable {
     case keyboard
@@ -49,6 +50,32 @@ enum BatteryDataSource: String, Codable {
     case mock
 }
 
+enum BatteryDisplayStatus: String, Codable, CaseIterable {
+    case good
+    case low
+    case critical
+    case disconnected
+    case stale
+    case unknown
+
+    var title: String {
+        rawValue.capitalized
+    }
+
+    var color: Color {
+        switch self {
+        case .good:
+            return AppTheme.good
+        case .low:
+            return AppTheme.low
+        case .critical:
+            return AppTheme.critical
+        case .disconnected, .stale, .unknown:
+            return AppTheme.neutral
+        }
+    }
+}
+
 enum RefreshReason: String, Codable {
     case appLaunch
     case dashboardAppear
@@ -82,23 +109,27 @@ struct DeviceBatterySnapshot: Codable, Identifiable, Equatable {
         return batteryPercent < threshold
     }
 
-    func status(threshold: Int, staleInterval: TimeInterval, now: Date = .now) -> String {
+    func displayStatus(threshold: Int, staleInterval: TimeInterval, now: Date = .now) -> BatteryDisplayStatus {
         if now.timeIntervalSince(lastSeenAt) > staleInterval {
-            return "Stale"
+            return .stale
         }
         if connectionState == .disconnected {
-            return "Disconnected"
+            return .disconnected
         }
         guard let batteryPercent else {
-            return "Unknown"
+            return .unknown
         }
         if batteryPercent < min(10, threshold) {
-            return "Critical"
+            return .critical
         }
         if batteryPercent < threshold {
-            return "Low"
+            return .low
         }
-        return "Good"
+        return .good
+    }
+
+    func status(threshold: Int, staleInterval: TimeInterval, now: Date = .now) -> String {
+        displayStatus(threshold: threshold, staleInterval: staleInterval, now: now).title
     }
 }
 
@@ -120,6 +151,7 @@ struct MonitorState {
     var lastSuccessfulRefreshAt: Date?
     var isRefreshing: Bool
     var errorMessage: String?
+    var diagnosticsMessage: String?
 }
 
 extension Array where Element == DeviceBatterySnapshot {

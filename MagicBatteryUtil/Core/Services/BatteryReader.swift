@@ -9,6 +9,11 @@ protocol BatteryReader: Sendable {
     func readBatterySnapshots() throws -> [DeviceBatterySnapshot]
 }
 
+struct BatteryReadResult {
+    let devices: [DeviceBatterySnapshot]
+    let diagnostics: [String]
+}
+
 enum BatteryReaderError: LocalizedError {
     case commandFailed(String)
     case unreadableOutput
@@ -25,6 +30,10 @@ enum BatteryReaderError: LocalizedError {
 
 final class IORegistryBatteryReader: BatteryReader, @unchecked Sendable {
     func readBatterySnapshots() throws -> [DeviceBatterySnapshot] {
+        try readBatteryResult().devices
+    }
+
+    func readBatteryResult() throws -> BatteryReadResult {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/sbin/ioreg")
         process.arguments = ["-r", "-l", "-c", "AppleDeviceManagementHIDEventService"]
@@ -48,13 +57,14 @@ final class IORegistryBatteryReader: BatteryReader, @unchecked Sendable {
         return parse(output: output)
     }
 
-    private func parse(output: String) -> [DeviceBatterySnapshot] {
+    private func parse(output: String) -> BatteryReadResult {
         let blocks = output
             .components(separatedBy: "+-o AppleDeviceManagementHIDEventService")
             .dropFirst()
 
         let now = Date()
-        return blocks.compactMap { block in
+        var diagnostics: [String] = []
+        let devices = blocks.compactMap { block in
             let properties = parseProperties(in: block)
             let kind = resolveKind(from: properties)
             let serialNumber = properties["SerialNumber"]?.nilIfBlank
@@ -64,6 +74,10 @@ final class IORegistryBatteryReader: BatteryReader, @unchecked Sendable {
                 ?? inferredDisplayName(kind: kind, properties: properties, fallbackID: id)
             let batteryPercent = properties["BatteryPercent"].flatMap(Int.init)
             let productID = properties["ProductID"].flatMap(Int.init)
+
+             if batteryPercent == nil {
+                diagnostics.append("Battery percentage unavailable for \(productName).")
+            }
 
             return DeviceBatterySnapshot(
                 id: id,
@@ -77,6 +91,7 @@ final class IORegistryBatteryReader: BatteryReader, @unchecked Sendable {
                 serialNumber: serialNumber
             )
         }
+        return BatteryReadResult(devices: devices, diagnostics: diagnostics)
     }
 
     private func parseProperties(in block: String) -> [String: String] {
@@ -128,6 +143,8 @@ final class IORegistryBatteryReader: BatteryReader, @unchecked Sendable {
             return .keyboard
         case 617:
             return .mouse
+        case 618:
+            return .trackpad
         default:
             return .unknown
         }

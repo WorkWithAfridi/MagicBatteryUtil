@@ -18,15 +18,9 @@ struct DashboardView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    heroPanel
                     header
-
-                    if appModel.notificationAuthorizationStatus != .authorized {
-                        permissionBanner
-                    }
-
-                    if let errorMessage = appModel.errorMessage {
-                        statusBanner(title: "Last refresh failed", message: errorMessage)
-                    }
+                    statusStack
 
                     if appModel.devices.isEmpty {
                         emptyState
@@ -43,21 +37,10 @@ struct DashboardView: View {
                 }
                 .padding(24)
             }
+            .background(AppTheme.pageGradient)
             .navigationTitle("Magic Battery Monitor")
             .toolbar {
                 ToolbarItemGroup {
-                    Button {
-                        Task { await appModel.refresh() }
-                    } label: {
-                        if appModel.isRefreshing {
-                            ProgressView()
-                                .controlSize(.small)
-                        } else {
-                            Label("Refresh", systemImage: "arrow.clockwise")
-                        }
-                    }
-                    .help("Refresh battery data now")
-
                     Button {
                         openWindow(id: "main")
                     } label: {
@@ -77,18 +60,74 @@ struct DashboardView: View {
         }
     }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Live accessory battery levels for your Apple Magic devices.")
-                .font(.title2.weight(.semibold))
+    private var heroPanel: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("MagicBatteryUtil")
+                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.primaryText)
+                    Text("A focused battery dashboard for your Apple Magic accessories.")
+                        .font(.title3.weight(.medium))
+                        .foregroundStyle(AppTheme.secondaryText)
+                    Text(lastUpdatedText)
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
 
-            HStack(spacing: 16) {
-                Text(lastUpdatedText)
-                    .foregroundStyle(.secondary)
-                Text("Low-battery threshold: \(appModel.thresholdPercent)%")
-                    .foregroundStyle(.secondary)
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 8) {
+                    StatusPill(status: appModel.lowBatteryCount > 0 ? .low : .good)
+                    Text("Auto-refresh every minute")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
             }
-            .font(.subheadline)
+
+            HStack(spacing: 24) {
+                StatBlock(value: "\(appModel.connectedDevicesCount)", label: "Connected")
+                StatBlock(value: "\(appModel.lowBatteryCount)", label: "Need attention")
+                StatBlock(value: appModel.averageBatteryPercent.map { "\($0)%" } ?? "N/A", label: "Average charge")
+            }
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppTheme.heroGradient, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
+        .shadow(color: AppTheme.shadowColor, radius: 20, y: 14)
+    }
+
+    private var header: some View {
+        HStack {
+            Text("Devices")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(AppTheme.primaryText)
+            Spacer()
+            HStack(spacing: 10) {
+                if appModel.isRefreshing {
+                    ProgressView()
+                        .controlSize(.small)
+                        .tint(AppTheme.low)
+                }
+                Text("Alert threshold: \(appModel.thresholdPercent)%")
+            }
+                .font(.subheadline)
+                .foregroundStyle(AppTheme.secondaryText)
+        }
+    }
+
+    @ViewBuilder
+    private var statusStack: some View {
+        if appModel.notificationAuthorizationStatus != .authorized {
+            permissionBanner
+        }
+
+        if let errorMessage = appModel.errorMessage {
+            statusBanner(title: "Last refresh failed", message: errorMessage)
+        }
+
+        if let diagnosticsMessage = appModel.diagnosticsMessage {
+            statusBanner(title: "Device diagnostics", message: diagnosticsMessage, tint: AppTheme.neutral)
         }
     }
 
@@ -96,55 +135,59 @@ struct DashboardView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Notifications are not fully enabled")
                 .font(.headline)
+                .foregroundStyle(AppTheme.primaryText)
             Text("Low-battery alerts need notification permission. You can request access now or open System Settings.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppTheme.secondaryText)
             HStack {
                 Button("Request Permission") {
                     Task { await appModel.requestNotificationPermission() }
                 }
+                .buttonStyle(.borderedProminent)
                 Button("Open Notification Settings") {
                     appModel.openNotificationSettings()
                 }
             }
         }
         .padding()
-        .background(.yellow.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
+        .background(Color.yellow.opacity(0.12), in: RoundedRectangle(cornerRadius: 18))
     }
 
-    private func statusBanner(title: String, message: String) -> some View {
+    private func statusBanner(title: String, message: String, tint: Color = AppTheme.critical) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.headline)
+                .foregroundStyle(AppTheme.primaryText)
             Text(message)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppTheme.secondaryText)
         }
         .padding()
-        .background(.red.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
+        .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 18))
     }
 
     private var emptyState: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("No supported Magic devices detected")
                 .font(.title3.weight(.semibold))
-            Text("Turn your Magic Keyboard, Magic Mouse, or Magic Trackpad on, make sure it is paired to this Mac, then refresh.")
-                .foregroundStyle(.secondary)
-            Button("Refresh Again") {
-                Task { await appModel.refresh() }
-            }
+                .foregroundStyle(AppTheme.primaryText)
+            Text("Turn your Magic Keyboard, Magic Mouse, or Magic Trackpad on, make sure it is paired to this Mac, then wait up to a minute for the next refresh cycle.")
+                .foregroundStyle(AppTheme.secondaryText)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(24)
-        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 20))
+        .glassPanel()
     }
 
     private var troubleshootingSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Troubleshooting")
                 .font(.headline)
+                .foregroundStyle(AppTheme.primaryText)
             Text("This app reads battery data from macOS IORegistry. If a device does not appear, reconnect it, toggle Bluetooth, or wake the Mac and refresh again.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppTheme.secondaryText)
         }
         .padding(.top, 4)
+        .padding(18)
+        .glassPanel()
     }
 
     private var lastUpdatedText: String {
@@ -170,19 +213,19 @@ struct DeviceCardView: View {
                 Label(device.displayName, systemImage: device.kind.symbolName)
                     .font(.headline)
                 Spacer()
-                Text(device.status(threshold: appModel.thresholdPercent, staleInterval: appModel.staleInterval))
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(statusColor.opacity(0.15), in: Capsule())
-                    .foregroundStyle(statusColor)
+                StatusPill(status: displayStatus)
             }
 
+        HStack(alignment: .lastTextBaseline) {
             Text(device.batteryLabel)
-                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .font(.system(size: 38, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.primaryText)
+            Text(device.kind.displayName)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(AppTheme.secondaryText)
+        }
 
-            ProgressView(value: Double(device.batteryPercent ?? 0), total: 100)
-                .tint(statusColor)
+            BatteryLevelBar(percent: device.batteryPercent, color: statusColor)
 
             VStack(alignment: .leading, spacing: 6) {
                 row(title: "Connection", value: device.connectionState.rawValue.capitalized)
@@ -192,37 +235,29 @@ struct DeviceCardView: View {
                 }
             }
             .font(.subheadline)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(AppTheme.secondaryText)
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background, in: RoundedRectangle(cornerRadius: 20))
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(.quaternary, lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.04), radius: 10, y: 4)
+        .glassPanel()
     }
 
     private func row(title: String, value: String) -> some View {
         HStack {
             Text(title)
+                .foregroundStyle(AppTheme.tertiaryText)
             Spacer()
             Text(value)
+                .foregroundStyle(AppTheme.secondaryText)
                 .multilineTextAlignment(.trailing)
         }
     }
 
     private var statusColor: Color {
-        switch device.status(threshold: appModel.thresholdPercent, staleInterval: appModel.staleInterval) {
-        case "Critical":
-            return .red
-        case "Low":
-            return .orange
-        case "Disconnected", "Stale":
-            return .secondary
-        default:
-            return .green
-        }
+        displayStatus.color
+    }
+
+    private var displayStatus: BatteryDisplayStatus {
+        device.displayStatus(threshold: appModel.thresholdPercent, staleInterval: appModel.staleInterval)
     }
 }
