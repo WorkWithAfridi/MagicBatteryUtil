@@ -95,6 +95,7 @@ struct MediumBatteryWidgetPreview: View {
 
 private struct PreviewSharedBatteryStore: SharedBatteryStoreProtocol {
     let snapshot: BatterySnapshotEnvelope
+    let accessStatus: SharedStoreAccessStatus = .appGroupAvailable
 
     func loadSnapshotEnvelope() -> BatterySnapshotEnvelope? {
         snapshot

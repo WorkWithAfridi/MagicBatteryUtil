@@ -364,7 +364,7 @@ Notification rule: send a notification only when a detected device transitions f
 
 ## Phase 4 - WidgetKit extension
 
-- [ ] Enable App Group capability on app and widget.
+- [x] Enable App Group capability on app and widget.
 
 - [x] Publish latest snapshot to shared storage.
 
@@ -396,7 +396,7 @@ Notification rule: send a notification only when a detected device transitions f
 
 - [x] Create WidgetKit extension target.
 
-- [ ] Create App Group identifier and enable it for both app and widget targets.
+- [x] Create App Group identifier and enable it for both app and widget targets.
 
 - [x] Add entitlements only as required; keep the app sandbox/privacy footprint minimal.
 

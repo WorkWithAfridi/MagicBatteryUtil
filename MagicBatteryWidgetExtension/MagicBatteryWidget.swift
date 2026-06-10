@@ -9,6 +9,7 @@ import WidgetKit
 private enum WidgetDataConfiguration {
     static let appGroupID = "group.com.workwithafridi.MagicBatteryUtil"
     static let latestSnapshotKey = "shared.latestSnapshot"
+    static let latestSnapshotFilename = "latest-battery-snapshot.json"
     static let staleInterval: TimeInterval = 30 * 60
 }
 
@@ -150,8 +151,11 @@ private struct BatteryWidgetProvider: TimelineProvider {
     private func loadEntry() -> BatteryWidgetEntry {
         let defaults = UserDefaults(suiteName: WidgetDataConfiguration.appGroupID)
         let decoder = JSONDecoder()
+        let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: WidgetDataConfiguration.appGroupID)
+        let snapshotFileURL = containerURL?.appendingPathComponent(WidgetDataConfiguration.latestSnapshotFilename)
+        let fileData = snapshotFileURL.flatMap { try? Data(contentsOf: $0) }
 
-        guard let data = defaults?.data(forKey: WidgetDataConfiguration.latestSnapshotKey),
+        guard let data = fileData ?? defaults?.data(forKey: WidgetDataConfiguration.latestSnapshotKey),
               let envelope = try? decoder.decode(WidgetSnapshotEnvelope.self, from: data) else {
             return BatteryWidgetEntry(
                 date: Date(),
@@ -236,9 +240,7 @@ private struct BatteryWidgetEntryView: View {
                     widgetBar(percent: device.batteryPercent, color: device.status(threshold: entry.envelope?.thresholdPercent ?? 30).color)
                 }
             } else {
-                Text(entry.message ?? "No data yet")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                emptyState
             }
 
             Spacer()
@@ -251,26 +253,30 @@ private struct BatteryWidgetEntryView: View {
         VStack(alignment: .leading, spacing: 12) {
             header
 
-            ForEach(entry.envelope?.devices.prefix(3) ?? []) { device in
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Label(device.displayName, systemImage: device.kind.symbolName)
-                            .lineLimit(1)
-                        Spacer()
-                        Text(device.batteryLabel)
-                            .foregroundStyle(device.status(threshold: entry.envelope?.thresholdPercent ?? 30).color)
+            if let devices = entry.envelope?.devices.prefix(3), !devices.isEmpty {
+                ForEach(devices) { device in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Label(device.displayName, systemImage: device.kind.symbolName)
+                                .lineLimit(1)
+                            Spacer()
+                            Text(device.batteryLabel)
+                                .foregroundStyle(device.status(threshold: entry.envelope?.thresholdPercent ?? 30).color)
+                        }
+                        widgetBar(percent: device.batteryPercent, color: device.status(threshold: entry.envelope?.thresholdPercent ?? 30).color)
                     }
-                    widgetBar(percent: device.batteryPercent, color: device.status(threshold: entry.envelope?.thresholdPercent ?? 30).color)
                 }
+            } else {
+                emptyState
             }
 
-            if let message = entry.message {
-                Spacer()
+            Spacer()
+
+            if let message = entry.message, entry.envelope != nil {
                 Text(message)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
-                Spacer()
                 footer
             }
         }
@@ -293,6 +299,23 @@ private struct BatteryWidgetEntryView: View {
         Text(entry.envelope?.generatedAt.formatted(date: .omitted, time: .shortened) ?? "No snapshot")
             .font(.caption2)
             .foregroundStyle(.secondary)
+    }
+
+    private var emptyState: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Image(systemName: "battery.100.bolt")
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundStyle(Color.white.opacity(0.88))
+
+            Text("No shared battery data")
+                .font(.headline)
+
+            Text(entry.message ?? "Open MagicBatteryUtil and keep it running for the next refresh cycle.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func statusPill(title: String) -> some View {

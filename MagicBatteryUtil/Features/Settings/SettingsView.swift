@@ -81,7 +81,6 @@ struct SettingsView: View {
         Group {
             settingsSection("Experience") {
                 settingsRow(title: "Appearance", value: "Dark mode only")
-                settingsRow(title: "Auto-refresh", value: "Every 1 minute")
                 settingsRow(title: "Current alert threshold", value: "\(appModel.thresholdPercent)%")
                 settingsRow(title: "Connected devices", value: "\(appModel.connectedDevicesCount)")
             }
@@ -158,15 +157,15 @@ struct SettingsView: View {
     private var monitoringPage: some View {
         Group {
             settingsSection("Monitoring engine") {
-                settingsRow(title: "Polling interval", value: "1 minute")
                 settingsRow(title: "Refresh triggers", value: "Launch, wake, and timer")
                 settingsRow(title: "Data source", value: "IORegistry (`ioreg`)")
-                Text("Manual refresh has been removed. The app refreshes automatically on launch, after wake, and every minute while running.")
+                Text("Manual refresh has been removed. The app refreshes automatically on launch, after wake, and while running in the background.")
                     .foregroundStyle(AppTheme.secondaryText)
             }
 
             settingsSection("Shared state") {
-                Text("Battery snapshots are cached for menu bar updates now and for the future WidgetKit extension target.")
+                settingsRow(title: "Container status", value: appModel.sharedStoreAccessStatus.title)
+                Text(appModel.sharedStoreAccessStatus.detail)
                     .foregroundStyle(AppTheme.secondaryText)
             }
         }
@@ -175,8 +174,13 @@ struct SettingsView: View {
     private var supportPage: some View {
         Group {
             settingsSection("Troubleshooting") {
-                Text("If a device does not appear, reconnect it, confirm Bluetooth pairing, and give the app up to one minute to pick up the next refresh cycle.")
+                Text("If a device does not appear, reconnect it, confirm Bluetooth pairing, and give the app a moment to pick up the next refresh cycle.")
                     .foregroundStyle(AppTheme.secondaryText)
+
+                if appModel.sharedStoreAccessStatus == .appGroupUnavailable {
+                    Text("Widgets can appear empty when the signed app or widget target is not actually using the App Group container yet. Open the app once after rebuilding from Xcode, then check the widget again.")
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
 
                 if let diagnosticsMessage = appModel.diagnosticsMessage {
                     Text(diagnosticsMessage)
@@ -194,7 +198,7 @@ struct SettingsView: View {
             }
 
             settingsSection("Project status") {
-                Text("The next major milestones are App Group entitlements, automated test coverage, and final widget validation on desktop and Notification Center.")
+                Text("The next major milestones are automated test coverage and final widget validation on desktop and Notification Center.")
                     .foregroundStyle(AppTheme.secondaryText)
             }
         }

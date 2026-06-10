@@ -16,6 +16,7 @@ final class AppModel: ObservableObject {
     @Published private(set) var isRefreshing = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var diagnosticsMessage: String?
+    @Published private(set) var sharedStoreAccessStatus: SharedStoreAccessStatus = .appGroupUnavailable
     @Published private(set) var notificationAuthorizationStatus: UNAuthorizationStatus = .notDetermined
     @Published private(set) var launchAtLoginEnabled = false
     @Published private(set) var launchAtLoginError: String?
@@ -65,6 +66,7 @@ final class AppModel: ObservableObject {
     private let notificationService: NotificationService
     private let loginItemService: LoginItemService
     private let monitorService: BatteryMonitorService
+    private let sharedBatteryStore: SharedBatteryStore
     private var sleepWakeObserver: SleepWakeObserver?
 
     convenience init() {
@@ -88,8 +90,10 @@ final class AppModel: ObservableObject {
         self.settingsStore = settingsStore
         self.notificationService = notificationService
         self.loginItemService = loginItemService
+        self.sharedBatteryStore = sharedBatteryStore
         self.thresholdPercent = settingsStore.thresholdPercent
         self.notificationsEnabled = settingsStore.notificationsEnabled
+        self.sharedStoreAccessStatus = sharedBatteryStore.accessStatus
 
         monitorService = BatteryMonitorService(
             reader: reader,

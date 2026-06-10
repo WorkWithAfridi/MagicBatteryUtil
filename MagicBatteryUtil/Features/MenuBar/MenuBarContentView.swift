@@ -14,15 +14,31 @@ struct MenuBarContentView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("MagicBatteryUtil")
-                        .font(.headline)
-                        .foregroundStyle(AppTheme.primaryText)
+                    HStack(spacing: 8) {
+                        Text("MagicBatteryUtil")
+                            .font(.headline)
+                            .foregroundStyle(AppTheme.primaryText)
+
+                        Spacer(minLength: 10)
+
+                        Button {
+                            openMainAndSettings()
+                        } label: {
+                            Image(systemName: "gearshape.fill")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(AppTheme.secondaryText)
+                                .frame(width: 24, height: 24)
+                                .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                        .help("Open MagicBatteryUtil settings")
+                    }
+
                     Text("\(appModel.connectedDevicesCount) connected")
                         .font(.caption)
                         .foregroundStyle(AppTheme.secondaryText)
                 }
                 Spacer()
-                StatusPill(status: appModel.lowBatteryCount > 0 ? .low : .good)
             }
 
             if appModel.devices.isEmpty {
@@ -53,39 +69,6 @@ struct MenuBarContentView: View {
                     .foregroundStyle(AppTheme.critical)
                     .fixedSize(horizontal: false, vertical: true)
             }
-
-            Divider()
-
-            HStack {
-                Button("Open App") {
-                    openWindow(id: "main")
-                    NSApp.activate(ignoringOtherApps: true)
-                }
-
-                Spacer()
-
-                if appModel.isRefreshing {
-                    Label("Refreshing", systemImage: "arrow.triangle.2.circlepath")
-                        .font(.caption)
-                        .foregroundStyle(AppTheme.secondaryText)
-                } else {
-                    Text("Updates every minute")
-                        .font(.caption)
-                        .foregroundStyle(AppTheme.secondaryText)
-                }
-            }
-
-            HStack {
-                Button("Settings") {
-                    openSettingsWindow()
-                }
-
-                Spacer()
-
-                Button("Quit") {
-                    NSApp.terminate(nil)
-                }
-            }
         }
         .padding(16)
         .background(
@@ -94,7 +77,8 @@ struct MenuBarContentView: View {
         )
     }
 
-    private func openSettingsWindow() {
+    private func openMainAndSettings() {
+        openWindow(id: "main")
         openWindow(id: "settings")
         NSApp.activate(ignoringOtherApps: true)
     }

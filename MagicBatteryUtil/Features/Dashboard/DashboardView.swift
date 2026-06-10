@@ -79,9 +79,6 @@ struct DashboardView: View {
 
                 VStack(alignment: .trailing, spacing: 8) {
                     StatusPill(status: appModel.lowBatteryCount > 0 ? .low : .good)
-                    Text("Auto-refresh every minute")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(AppTheme.secondaryText)
                 }
             }
 
@@ -169,7 +166,7 @@ struct DashboardView: View {
             Text("No supported Magic devices detected")
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(AppTheme.primaryText)
-            Text("Turn your Magic Keyboard, Magic Mouse, or Magic Trackpad on, make sure it is paired to this Mac, then wait up to a minute for the next refresh cycle.")
+            Text("Turn your Magic Keyboard, Magic Mouse, or Magic Trackpad on, make sure it is paired to this Mac, then wait for the next refresh cycle.")
                 .foregroundStyle(AppTheme.secondaryText)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
