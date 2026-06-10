@@ -198,7 +198,7 @@ struct DashboardView: View {
     }
 
     private func openSettingsWindow() {
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        openWindow(id: "settings")
         NSApp.activate(ignoringOtherApps: true)
     }
 }

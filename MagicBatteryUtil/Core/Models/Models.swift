@@ -137,6 +137,21 @@ struct BatterySnapshotEnvelope: Codable {
     var generatedAt: Date
     var devices: [DeviceBatterySnapshot]
     var thresholdPercent: Int
+
+    var staleInterval: TimeInterval { 30 * 60 }
+
+    var isStale: Bool {
+        Date().timeIntervalSince(generatedAt) > staleInterval
+    }
+
+    var lowestBatteryDevice: DeviceBatterySnapshot? {
+        devices
+            .filter { $0.connectionState == .connected }
+            .sorted {
+                ($0.batteryPercent ?? 101) < ($1.batteryPercent ?? 101)
+            }
+            .first
+    }
 }
 
 struct NotificationMemory: Codable {
@@ -152,6 +167,50 @@ struct MonitorState {
     var isRefreshing: Bool
     var errorMessage: String?
     var diagnosticsMessage: String?
+}
+
+extension BatterySnapshotEnvelope {
+    static var preview: BatterySnapshotEnvelope {
+        BatterySnapshotEnvelope(
+            generatedAt: .now,
+            devices: [
+                DeviceBatterySnapshot(
+                    id: "keyboard-preview",
+                    productName: "Magic Keyboard",
+                    kind: .keyboard,
+                    batteryPercent: 78,
+                    connectionState: .connected,
+                    lastSeenAt: .now,
+                    source: .mock,
+                    productID: 615,
+                    serialNumber: "PREVIEW-KB"
+                ),
+                DeviceBatterySnapshot(
+                    id: "mouse-preview",
+                    productName: "Magic Mouse",
+                    kind: .mouse,
+                    batteryPercent: 24,
+                    connectionState: .connected,
+                    lastSeenAt: .now,
+                    source: .mock,
+                    productID: 617,
+                    serialNumber: "PREVIEW-MO"
+                ),
+                DeviceBatterySnapshot(
+                    id: "trackpad-preview",
+                    productName: "Magic Trackpad",
+                    kind: .trackpad,
+                    batteryPercent: 53,
+                    connectionState: .connected,
+                    lastSeenAt: .now,
+                    source: .mock,
+                    productID: 618,
+                    serialNumber: "PREVIEW-TP"
+                )
+            ],
+            thresholdPercent: 30
+        )
+    }
 }
 
 extension Array where Element == DeviceBatterySnapshot {

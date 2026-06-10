@@ -1,0 +1,7 @@
++-o AppleDeviceManagementHIDEventService  <class AppleDeviceManagementHIDEventService, id 0x100028692, registered, matched, active, busy 0 (2 ms), retain 7>
+    {
+      "DeviceAddress" = "11-22-33-44-55-66"
+      "Product" = "Magic Trackpad"
+      "SerialNumber" = "11:22:33:44:55:66"
+      "ProductID" = 618
+    }

@@ -27,6 +27,13 @@ struct MagicBatteryUtilApp: App {
                 .preferredColorScheme(.dark)
         }
 
+        WindowGroup("Settings", id: "settings") {
+            SettingsView()
+                .environmentObject(appModel)
+                .frame(minWidth: 760, minHeight: 560)
+                .preferredColorScheme(.dark)
+        }
+
         MenuBarExtra("Magic Battery", systemImage: appModel.menuBarSymbolName) {
             MenuBarContentView()
                 .environmentObject(appModel)
@@ -34,12 +41,5 @@ struct MagicBatteryUtilApp: App {
                 .preferredColorScheme(.dark)
         }
         .menuBarExtraStyle(.window)
-
-        Settings {
-            SettingsView()
-                .environmentObject(appModel)
-                .frame(width: 460)
-                .preferredColorScheme(.dark)
-        }
     }
 }

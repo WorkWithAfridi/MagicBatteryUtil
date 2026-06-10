@@ -1,0 +1,17 @@
++-o AppleDeviceManagementHIDEventService  <class AppleDeviceManagementHIDEventService, id 0x100028692, registered, matched, active, busy 0 (2 ms), retain 7>
+    {
+      "DeviceAddress" = "e0-eb-40-d8-06-d1"
+      "Product" = "Magic Keyboard"
+      "SerialNumber" = "E0:EB:40:D8:06:D1"
+      "ProductID" = 615
+      "BatteryPercent" = 98
+    }
+
++-o AppleDeviceManagementHIDEventService  <class AppleDeviceManagementHIDEventService, id 0x10004d396, registered, matched, active, busy 0 (2 ms), retain 7>
+    {
+      "DeviceAddress" = "48-4b-aa-e6-95-ee"
+      "Product" =
+      "SerialNumber" = "48:4B:AA:E6:95:EE"
+      "ProductID" = 617
+      "BatteryPercent" = 100
+    }

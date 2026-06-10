@@ -324,7 +324,7 @@ Notification rule: send a notification only when a detected device transitions f
 
 - [ ] Confirm IORegistry command returns Product and BatteryPercent for your devices.
 
-- [ ] Save sample outputs as parser test fixtures.
+- [x] Save sample outputs as parser test fixtures.
 
 - [ ] Confirm notifications and SMAppService work in a minimal macOS app.
 
@@ -512,11 +512,11 @@ Notification rule: send a notification only when a detected device transitions f
 
 ## Widgets
 
-- [ ] Create small widget layout.
+- [x] Create small widget layout.
 
-- [ ] Create medium widget layout.
+- [x] Create medium widget layout.
 
-- [ ] Read shared snapshot from App Group store.
+- [x] Read shared snapshot from App Group store.
 
 - [ ] Show stale warning when snapshot age exceeds freshness window.
 
