@@ -85,7 +85,7 @@ struct MenuBarContentView: View {
         NSApp.windows
             .filter(\.isVisible)
             .forEach { $0.orderFrontRegardless() }
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        openWindow(id: "settings")
     }
 
     private var hasOpenMainWindow: Bool {

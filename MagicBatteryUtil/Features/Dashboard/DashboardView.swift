@@ -8,6 +8,7 @@ import UserNotifications
 
 struct DashboardView: View {
     @EnvironmentObject private var appModel: AppModel
+    @Environment(\.openWindow) private var openWindow
 
     private let columns = [
         GridItem(.adaptive(minimum: 220), spacing: 16)
@@ -189,7 +190,7 @@ struct DashboardView: View {
 
     private func openSettingsWindow() {
         NSApp.activate(ignoringOtherApps: true)
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        openWindow(id: "settings")
     }
 }
 
