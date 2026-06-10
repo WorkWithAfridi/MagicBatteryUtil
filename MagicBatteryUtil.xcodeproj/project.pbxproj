@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		EFC1DF572FD941C900DBE11F /* Magic_Battery_Monitor_Project_Document.md in Resources */ = {isa = PBXBuildFile; fileRef = EFC1DF402FD941C900DBE11F /* Magic_Battery_Monitor_Project_Document.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		EFC1DF122FD93FC100DBE11F /* MagicBatteryUtil.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MagicBatteryUtil.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EFC1DF402FD941C900DBE11F /* Magic_Battery_Monitor_Project_Document.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Magic_Battery_Monitor_Project_Document.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -34,6 +39,7 @@
 			children = (
 				EFC1DF142FD93FC100DBE11F /* MagicBatteryUtil */,
 				EFC1DF132FD93FC100DBE11F /* Products */,
+				EFC1DF402FD941C900DBE11F /* Magic_Battery_Monitor_Project_Document.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -109,6 +115,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EFC1DF572FD941C900DBE11F /* Magic_Battery_Monitor_Project_Document.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
