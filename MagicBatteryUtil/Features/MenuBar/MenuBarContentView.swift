@@ -19,7 +19,7 @@ struct MenuBarContentView: View {
                             .font(.headline)
                             .foregroundStyle(AppTheme.primaryText)
 
-                        Spacer(minLength: 10)
+                        Spacer()
 
                         Button {
                             openMainAndSettings()
@@ -33,12 +33,12 @@ struct MenuBarContentView: View {
                         .buttonStyle(.plain)
                         .help("Open MagicBatteryUtil settings")
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                     Text("\(appModel.connectedDevicesCount) connected")
                         .font(.caption)
                         .foregroundStyle(AppTheme.secondaryText)
                 }
-                Spacer()
             }
 
             if appModel.devices.isEmpty {
@@ -78,8 +78,19 @@ struct MenuBarContentView: View {
     }
 
     private func openMainAndSettings() {
-        openWindow(id: "main")
-        openWindow(id: "settings")
+        if !hasOpenMainWindow {
+            openWindow(id: "main")
+        }
         NSApp.activate(ignoringOtherApps: true)
+        NSApp.windows
+            .filter(\.isVisible)
+            .forEach { $0.orderFrontRegardless() }
+        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+    }
+
+    private var hasOpenMainWindow: Bool {
+        NSApp.windows.contains { window in
+            window.title == "Magic Battery Monitor" && window.isVisible
+        }
     }
 }

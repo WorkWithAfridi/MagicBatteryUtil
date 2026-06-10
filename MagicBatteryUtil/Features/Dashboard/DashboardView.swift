@@ -8,7 +8,6 @@ import UserNotifications
 
 struct DashboardView: View {
     @EnvironmentObject private var appModel: AppModel
-    @Environment(\.openWindow) private var openWindow
 
     private let columns = [
         GridItem(.adaptive(minimum: 220), spacing: 16)
@@ -41,12 +40,6 @@ struct DashboardView: View {
             .navigationTitle("Magic Battery Monitor")
             .toolbar {
                 ToolbarItemGroup {
-                    Button {
-                        openWindow(id: "main")
-                    } label: {
-                        Label("Open Window", systemImage: "macwindow")
-                    }
-
                     Button {
                         openSettingsWindow()
                     } label: {
@@ -195,8 +188,8 @@ struct DashboardView: View {
     }
 
     private func openSettingsWindow() {
-        openWindow(id: "settings")
         NSApp.activate(ignoringOtherApps: true)
+        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
     }
 }
 

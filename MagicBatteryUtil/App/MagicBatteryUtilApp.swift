@@ -27,7 +27,7 @@ struct MagicBatteryUtilApp: App {
                 .preferredColorScheme(.dark)
         }
 
-        WindowGroup("Settings", id: "settings") {
+        Settings {
             SettingsView()
                 .environmentObject(appModel)
                 .frame(minWidth: 760, minHeight: 560)
