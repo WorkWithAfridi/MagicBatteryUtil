@@ -9,7 +9,9 @@ import WidgetKit
 private enum WidgetDataConfiguration {
     static let appGroupID = "group.com.workwithafridi.MagicBatteryUtil"
     static let latestSnapshotKey = "shared.latestSnapshot"
+    static let latestWidgetSnapshotKey = "shared.latestWidgetSnapshot"
     static let latestSnapshotFilename = "latest-battery-snapshot.json"
+    static let latestWidgetSnapshotFilename = "latest-widget-snapshot.json"
     static let staleInterval: TimeInterval = 30 * 60
 }
 
@@ -152,15 +154,19 @@ private struct BatteryWidgetProvider: TimelineProvider {
         let defaults = UserDefaults(suiteName: WidgetDataConfiguration.appGroupID)
         let decoder = JSONDecoder()
         let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: WidgetDataConfiguration.appGroupID)
-        let snapshotFileURL = containerURL?.appendingPathComponent(WidgetDataConfiguration.latestSnapshotFilename)
-        let fileData = snapshotFileURL.flatMap { try? Data(contentsOf: $0) }
+        let widgetSnapshotFileURL = containerURL?.appendingPathComponent(WidgetDataConfiguration.latestWidgetSnapshotFilename)
+        let legacySnapshotFileURL = containerURL?.appendingPathComponent(WidgetDataConfiguration.latestSnapshotFilename)
+        let widgetData = widgetSnapshotFileURL.flatMap { try? Data(contentsOf: $0) }
+            ?? defaults?.data(forKey: WidgetDataConfiguration.latestWidgetSnapshotKey)
+        let legacyData = legacySnapshotFileURL.flatMap { try? Data(contentsOf: $0) }
+            ?? defaults?.data(forKey: WidgetDataConfiguration.latestSnapshotKey)
 
-        guard let data = fileData ?? defaults?.data(forKey: WidgetDataConfiguration.latestSnapshotKey),
+        guard let data = widgetData ?? legacyData,
               let envelope = try? decoder.decode(WidgetSnapshotEnvelope.self, from: data) else {
             return BatteryWidgetEntry(
                 date: Date(),
                 envelope: nil,
-                message: "Open MagicBatteryUtil to generate the first shared snapshot."
+                message: "Open MagicBatteryUtil to load your latest accessory status."
             )
         }
 
@@ -168,7 +174,7 @@ private struct BatteryWidgetProvider: TimelineProvider {
         return BatteryWidgetEntry(
             date: Date(),
             envelope: envelope,
-            message: isStale ? "Data is older than 30 minutes." : nil
+            message: isStale ? "Updated over 30 minutes ago." : nil
         )
     }
 
@@ -207,7 +213,7 @@ struct MagicBatteryWidget: Widget {
                 .widgetContainerBackground()
         }
         .configurationDisplayName("Magic Battery")
-        .description("Shows the latest cached battery status for your Magic accessories.")
+        .description("Shows the latest battery levels for your Magic accessories.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -296,7 +302,7 @@ private struct BatteryWidgetEntryView: View {
     }
 
     private var footer: some View {
-        Text(entry.envelope?.generatedAt.formatted(date: .omitted, time: .shortened) ?? "No snapshot")
+        Text(entry.envelope?.generatedAt.formatted(date: .omitted, time: .shortened) ?? "Waiting for update")
             .font(.caption2)
             .foregroundStyle(.secondary)
     }
@@ -307,10 +313,10 @@ private struct BatteryWidgetEntryView: View {
                 .font(.system(size: 22, weight: .semibold))
                 .foregroundStyle(Color.white.opacity(0.88))
 
-            Text("No shared battery data")
+            Text("No battery updates yet")
                 .font(.headline)
 
-            Text(entry.message ?? "Open MagicBatteryUtil and keep it running for the next refresh cycle.")
+            Text(entry.message ?? "Open MagicBatteryUtil to load your latest accessory status.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

@@ -106,6 +106,7 @@ final class AppModel: ObservableObject {
             devices = cachedSnapshot.devices.sortedForDisplay
             lastSuccessfulRefreshAt = cachedSnapshot.generatedAt
             lastRefreshAt = cachedSnapshot.generatedAt
+            sharedBatteryStore.saveSnapshotEnvelope(cachedSnapshot)
         }
 
         monitorService.onStateChange = { [weak self] state in

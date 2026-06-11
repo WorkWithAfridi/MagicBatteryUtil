@@ -81,14 +81,14 @@ struct SettingsView: View {
         Group {
             settingsSection("Experience") {
                 settingsRow(title: "Appearance", value: "Dark mode only")
-                settingsRow(title: "Current alert threshold", value: "\(appModel.thresholdPercent)%")
+                settingsRow(title: "Low-battery alert", value: "\(appModel.thresholdPercent)%")
                 settingsRow(title: "Connected devices", value: "\(appModel.connectedDevicesCount)")
             }
 
-            settingsSection("Current status") {
+            settingsSection("Today") {
                 settingsRow(title: "Notifications", value: authorizationLabel)
                 settingsRow(title: "Launch at login", value: launchAtLoginSummary)
-                settingsRow(title: "Latest refresh", value: lastRefreshSummary)
+                settingsRow(title: "Last updated", value: lastRefreshSummary)
             }
         }
     }
@@ -111,8 +111,8 @@ struct SettingsView: View {
                 }
             }
 
-            settingsSection("Permission status") {
-                settingsRow(title: "Authorization", value: authorizationLabel)
+            settingsSection("Notification access") {
+                settingsRow(title: "Status", value: authorizationLabel)
                 Text(notificationHelpText)
                     .foregroundStyle(AppTheme.secondaryText)
 
@@ -141,13 +141,13 @@ struct SettingsView: View {
                     )
                 )
 
-                settingsRow(title: "Current status", value: launchAtLoginSummary)
+                settingsRow(title: "Status", value: launchAtLoginSummary)
 
                 if let launchAtLoginError = appModel.launchAtLoginError {
                     Text(launchAtLoginError)
                         .foregroundStyle(AppTheme.secondaryText)
                 } else {
-                    Text("Enable this to keep MagicBatteryUtil monitoring your devices after you sign in.")
+                    Text("Enable this to keep MagicBatteryUtil ready as soon as you sign in.")
                         .foregroundStyle(AppTheme.secondaryText)
                 }
             }
@@ -156,15 +156,15 @@ struct SettingsView: View {
 
     private var monitoringPage: some View {
         Group {
-            settingsSection("Monitoring engine") {
-                settingsRow(title: "Refresh triggers", value: "Launch, wake, and timer")
-                settingsRow(title: "Data source", value: "IORegistry (`ioreg`)")
-                Text("Manual refresh has been removed. The app refreshes automatically on launch, after wake, and while running in the background.")
+            settingsSection("Background updates") {
+                settingsRow(title: "Update style", value: "Automatic")
+                settingsRow(title: "Accessories", value: "Magic Keyboard, Mouse, and Trackpad")
+                Text("MagicBatteryUtil keeps your latest accessory battery status current while the app is running.")
                     .foregroundStyle(AppTheme.secondaryText)
             }
 
-            settingsSection("Shared state") {
-                settingsRow(title: "Container status", value: appModel.sharedStoreAccessStatus.title)
+            settingsSection("Widgets") {
+                settingsRow(title: "Status", value: appModel.sharedStoreAccessStatus.title)
                 Text(appModel.sharedStoreAccessStatus.detail)
                     .foregroundStyle(AppTheme.secondaryText)
             }
@@ -173,17 +173,12 @@ struct SettingsView: View {
 
     private var supportPage: some View {
         Group {
-            settingsSection("Troubleshooting") {
-                Text("If a device does not appear, reconnect it, confirm Bluetooth pairing, and give the app a moment to pick up the next refresh cycle.")
+            settingsSection("Getting help") {
+                Text("If a device does not appear, reconnect it, confirm Bluetooth pairing, and give MagicBatteryUtil a moment to update its latest accessory status.")
                     .foregroundStyle(AppTheme.secondaryText)
 
                 if appModel.sharedStoreAccessStatus == .appGroupUnavailable {
-                    Text("Widgets can appear empty when the signed app or widget target is not actually using the App Group container yet. Open the app once after rebuilding from Xcode, then check the widget again.")
-                        .foregroundStyle(AppTheme.secondaryText)
-                }
-
-                if let diagnosticsMessage = appModel.diagnosticsMessage {
-                    Text(diagnosticsMessage)
+                    Text("If the widget looks empty, open MagicBatteryUtil once and it will sync your latest accessory status.")
                         .foregroundStyle(AppTheme.secondaryText)
                 }
 
@@ -197,8 +192,8 @@ struct SettingsView: View {
                 }
             }
 
-            settingsSection("Project status") {
-                Text("The next major milestones are automated test coverage and final widget validation on desktop and Notification Center.")
+            settingsSection("About the experience") {
+                Text("MagicBatteryUtil is designed to keep your Magic accessory battery levels easy to check from the app, menu bar, and widget.")
                     .foregroundStyle(AppTheme.secondaryText)
             }
         }
@@ -209,9 +204,9 @@ struct SettingsView: View {
         case .authorized, .provisional:
             return "Enabled"
         case .denied:
-            return "Denied"
+            return "Turned off"
         case .notDetermined:
-            return "Not requested"
+            return "Not set up"
         @unknown default:
             return "Unknown"
         }
@@ -222,9 +217,9 @@ struct SettingsView: View {
         case .authorized, .provisional:
             return "Low-battery alerts are available and will be sent only when a device crosses below your threshold."
         case .denied:
-            return "Notifications are currently denied. Open System Settings if you want low-battery alerts to work again."
+            return "Notifications are currently turned off. Open System Settings if you want low-battery alerts to work again."
         case .notDetermined:
-            return "Notifications have not been requested yet. Ask for permission here when you are ready."
+            return "Notifications have not been set up yet. You can allow them here whenever you are ready."
         @unknown default:
             return "Notification authorization is in an unknown state."
         }
@@ -236,7 +231,7 @@ struct SettingsView: View {
 
     private var lastRefreshSummary: String {
         guard let lastSuccessfulRefreshAt = appModel.lastSuccessfulRefreshAt else {
-            return "No successful refresh yet"
+            return "Preparing your latest battery status"
         }
         return lastSuccessfulRefreshAt.formatted(date: .abbreviated, time: .shortened)
     }

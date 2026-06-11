@@ -135,6 +135,7 @@ final class BatteryMonitorService {
             return
         }
         lastWidgetReloadAt = now
+        WidgetCenter.shared.reloadTimelines(ofKind: AppConfiguration.widgetKind)
         WidgetCenter.shared.reloadAllTimelines()
     }
 

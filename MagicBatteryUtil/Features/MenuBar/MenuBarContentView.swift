@@ -64,7 +64,7 @@ struct MenuBarContentView: View {
 
             if let errorMessage = appModel.errorMessage {
                 Divider()
-                Text(errorMessage)
+                Text("Unable to update battery status right now. \(errorMessage)")
                     .font(.caption)
                     .foregroundStyle(AppTheme.critical)
                     .fixedSize(horizontal: false, vertical: true)

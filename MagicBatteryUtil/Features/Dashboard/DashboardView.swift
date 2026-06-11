@@ -33,7 +33,7 @@ struct DashboardView: View {
                         }
                     }
 
-                    troubleshootingSection
+                    helpSection
                 }
                 .padding(24)
             }
@@ -114,11 +114,7 @@ struct DashboardView: View {
         }
 
         if let errorMessage = appModel.errorMessage {
-            statusBanner(title: "Last refresh failed", message: errorMessage)
-        }
-
-        if let diagnosticsMessage = appModel.diagnosticsMessage {
-            statusBanner(title: "Device diagnostics", message: diagnosticsMessage, tint: AppTheme.neutral)
+            statusBanner(title: "We couldn't update your latest battery status", message: errorMessage)
         }
     }
 
@@ -160,7 +156,7 @@ struct DashboardView: View {
             Text("No supported Magic devices detected")
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(AppTheme.primaryText)
-            Text("Turn your Magic Keyboard, Magic Mouse, or Magic Trackpad on, make sure it is paired to this Mac, then wait for the next refresh cycle.")
+            Text("Turn on your Magic Keyboard, Magic Mouse, or Magic Trackpad and make sure it is paired with this Mac. Your accessories will appear here as soon as they are available.")
                 .foregroundStyle(AppTheme.secondaryText)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -168,12 +164,12 @@ struct DashboardView: View {
         .glassPanel()
     }
 
-    private var troubleshootingSection: some View {
+    private var helpSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Troubleshooting")
+            Text("Helpful tips")
                 .font(.headline)
                 .foregroundStyle(AppTheme.primaryText)
-            Text("This app reads battery data from macOS IORegistry. If a device does not appear, reconnect it, toggle Bluetooth, or wake the Mac and refresh again.")
+            Text("If an accessory does not appear, reconnect it, confirm Bluetooth is enabled, and give the app a moment to pick up the latest status.")
                 .foregroundStyle(AppTheme.secondaryText)
         }
         .padding(.top, 4)
@@ -183,7 +179,7 @@ struct DashboardView: View {
 
     private var lastUpdatedText: String {
         guard let lastSuccessfulRefreshAt = appModel.lastSuccessfulRefreshAt else {
-            return "No successful refresh yet"
+            return "Preparing your latest battery status"
         }
         return "Last updated \(lastSuccessfulRefreshAt.formatted(date: .abbreviated, time: .shortened))"
     }
@@ -218,15 +214,30 @@ struct DeviceCardView: View {
 
             BatteryLevelBar(percent: device.batteryPercent, color: statusColor)
 
+            HStack(spacing: 10) {
+                detailPill(title: connectionLabel, color: connectionColor)
+                detailPill(title: displayStatus.title, color: statusColor)
+                detailPill(title: device.kind.displayName, color: AppTheme.neutral)
+            }
+
             VStack(alignment: .leading, spacing: 6) {
-                row(title: "Connection", value: device.connectionState.rawValue.capitalized)
-                row(title: "Last seen", value: device.lastSeenAt.formatted(date: .abbreviated, time: .shortened))
+                row(title: "Battery level", value: batteryDescription)
+                row(title: "Connection", value: connectionLabel)
+                row(title: "Last updated", value: device.lastSeenAt.formatted(date: .abbreviated, time: .shortened))
                 if let serialNumber = device.serialNumber {
                     row(title: "Identifier", value: serialNumber)
                 }
             }
             .font(.subheadline)
             .foregroundStyle(AppTheme.secondaryText)
+
+            if let supportMessage {
+                Text(supportMessage)
+                    .font(.footnote)
+                    .foregroundStyle(AppTheme.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 2)
+            }
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -250,5 +261,58 @@ struct DeviceCardView: View {
 
     private var displayStatus: BatteryDisplayStatus {
         device.displayStatus(threshold: appModel.thresholdPercent, staleInterval: appModel.staleInterval)
+    }
+
+    private var connectionLabel: String {
+        device.connectionState.rawValue.capitalized
+    }
+
+    private var connectionColor: Color {
+        device.connectionState == .connected ? AppTheme.good : AppTheme.neutral
+    }
+
+    private var batteryDescription: String {
+        guard let batteryPercent = device.batteryPercent else {
+            return "Currently unavailable"
+        }
+
+        switch displayStatus {
+        case .critical:
+            return "\(batteryPercent)% • Charge soon"
+        case .low:
+            return "\(batteryPercent)% • Below alert level"
+        case .stale:
+            return "\(batteryPercent)% • Waiting for a fresh update"
+        case .disconnected:
+            return "\(batteryPercent)% • Last known level"
+        case .unknown:
+            return "\(batteryPercent)%"
+        case .good:
+            return "\(batteryPercent)% • Looking good"
+        }
+    }
+
+    private var supportMessage: String? {
+        switch displayStatus {
+        case .critical:
+            return "This accessory is critically low and should be charged as soon as possible."
+        case .low:
+            return "This accessory is below your alert threshold."
+        case .stale:
+            return "Bring this accessory online to refresh its current battery level."
+        case .disconnected:
+            return "Reconnect this accessory to update its live battery status."
+        case .good, .unknown:
+            return nil
+        }
+    }
+
+    private func detailPill(title: String, color: Color) -> some View {
+        Text(title)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(AppTheme.primaryText)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(color.opacity(0.16), in: Capsule())
     }
 }

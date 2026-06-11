@@ -47,15 +47,15 @@ enum SettingsRoute: String, CaseIterable, Identifiable {
     var subtitle: String {
         switch self {
         case .overview:
-            return "Core app behavior"
+            return "Your accessory snapshot"
         case .notifications:
-            return "Alerts and thresholds"
+            return "Alerts and battery reminders"
         case .startup:
-            return "Launch at login"
+            return "Launch preferences"
         case .monitoring:
-            return "Refresh and data flow"
+            return "Background behavior"
         case .support:
-            return "Troubleshooting"
+            return "Help and guidance"
         }
     }
 }

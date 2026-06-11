@@ -12,7 +12,20 @@
 		<key>MagicBatteryWidgetExtension.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>1</integer>
+			<integer>0</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>EFC1DF112FD93FC100DBE11F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>EFC1DF5B2FD950AA00DBE11F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>

@@ -17,7 +17,7 @@ struct BatteryWidgetSnapshotState {
         generatedAt: nil,
         isStale: true,
         staleMessage: nil,
-        emptyMessage: "No battery snapshot is available yet."
+        emptyMessage: "Your latest battery status is not available yet."
     )
 }
 
@@ -38,8 +38,8 @@ struct BatteryWidgetSnapshotProvider {
             envelope: envelope,
             generatedAt: envelope.generatedAt,
             isStale: isStale,
-            staleMessage: isStale ? "Cached data is older than 30 minutes." : nil,
-            emptyMessage: envelope.devices.isEmpty ? "No supported devices were detected in the latest snapshot." : nil
+            staleMessage: isStale ? "Updated over 30 minutes ago." : nil,
+            emptyMessage: envelope.devices.isEmpty ? "No supported Magic accessories are currently available." : nil
         )
     }
 }
